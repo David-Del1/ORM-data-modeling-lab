@@ -27,7 +27,7 @@ describe('reviewer routes', () => {
 
   it('gets all users via GET', async () => {
     
-    const user1 = await Reviewer.bulkCreate([
+    await Reviewer.bulkCreate([
       {
         userName: 'banana lover',
         company: 'banana land'
@@ -195,5 +195,45 @@ describe('studio routes', () => {
   
   });
 
+  it('gets a studio by id via GET', async () => {
+    const studio = await Studio.create({
+      name: 'Warner Bros.',
+      city: 'Studio City',
+      state: 'CA',
+      country: 'USA'
+    });
 
-}); 
+    const res = await request(app).get('/api/v1/studios/1');
+    expect(res.body).toEqual({ 
+      ...studio.toJSON(), 
+      updatedAt: expect.any(String),
+      createdAt: expect.any(String) });
+  });
+
+});
+
+describe('Film tests', () => {
+  beforeEach(() => {
+    return sequelize.sync({ force: true });
+  }); 
+
+  it('creates a new film via POST', async () => {
+    const res = await request(app)
+      .post('/api/v1/films')
+      .send ({
+        title: 'Spooky Bandit',
+        studio: 1,
+        released: 2009
+
+      });
+
+    expect(res.body).toEqual({
+      id: 1,
+      title: 'Spooky Bandit',
+      studio: '1',
+      released: 2009,
+      updatedAt: expect.any(String),
+      createdAt: expect.any(String) 
+    });
+  });
+});
