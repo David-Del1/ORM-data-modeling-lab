@@ -2,8 +2,9 @@ import sequelize from '../lib/utils/db.js';
 import request from 'supertest';
 import app from '../lib/app.js';
 import Reviewer from '../lib/models/Reviewer.js';
+import Studio from '../lib/models/Studio.js';
 
-describe('demo routes', () => {
+describe('reviewer routes', () => {
   beforeEach(() => {
     return sequelize.sync({ force: true });
   }); 
@@ -123,3 +124,76 @@ describe('demo routes', () => {
     });
   });
 });
+
+describe('studio routes', () => {
+  
+  beforeEach(() => {
+    return sequelize.sync({ force: true });
+  });
+
+  it('adds a studio with POST', async () => {
+
+    const res = await request(app)
+      .post('/api/v1/studios')
+      .send ({
+        name: 'Hollywood',
+        city: 'Orlando',
+        state: 'FL',
+        country: 'USA'
+      });
+
+    expect(res.body).toEqual({
+      id: 1,
+      name: 'Hollywood',
+      city: 'Orlando',
+      state: 'FL',
+      country: 'USA',
+      updatedAt: expect.any(String),
+      createdAt: expect.any(String) 
+    });
+  });
+
+  it('gets all studios via GET', async () => {
+    
+    await Studio.bulkCreate([
+      {
+        name: 'Chatta Studio',
+        city: 'Chattanooga',
+        state: 'TN',
+        country: 'USA'
+      },
+      {
+        name: 'Studio 54',
+        city: 'New York',
+        state: 'NY',
+        country: 'USA'
+      },
+      {
+        name: 'Unknown Inc.',
+        city: '',
+        state: '',
+        country: ''
+      }
+    ]);
+
+    const res = await request(app).get('/api/v1/studios');
+    expect(res.body).toEqual(
+      [{
+        id: expect.any(Number),
+        name: 'Chatta Studio',
+      },
+      {
+        id: expect.any(Number),
+        name: 'Studio 54',
+      },
+      {
+        id: expect.any(Number),
+        name: 'Unknown Inc.',
+      }],
+    
+    );
+  
+  });
+
+
+}); 
