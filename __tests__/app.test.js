@@ -82,4 +82,29 @@ describe('demo routes', () => {
       updatedAt: expect.any(String),
       createdAt: expect.any(String) });
   });
+
+  it('updates a reviewer via PUT', async () => {
+
+    const reviewer = await Reviewer.create({
+      userName: 'Bilbo',
+      company: 'Shire'
+    });
+
+    const res = await request(app)
+      .put('/api/v1/reviewers/1')
+      .send({
+        userName: 'Frodo',
+        company: 'Shire'
+      });
+
+    expect(res.body).toEqual({
+      ...reviewer.toJSON(),
+      userName: 'Frodo',
+      company: 'Shire',
+      updatedAt: expect.any(String),
+      createdAt: expect.any(String)
+    });
+
+    expect(res.body.updatedAt).not.toEqual(reviewer.updatedAt.toISOString());
+  });
 });
