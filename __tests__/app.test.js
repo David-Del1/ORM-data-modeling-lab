@@ -2,6 +2,7 @@ import sequelize from '../lib/utils/db.js';
 import request from 'supertest';
 import app from '../lib/app.js';
 import Reviewer from '../lib/models/Reviewer.js';
+import Studio from '../lib/models/Studio.js';
 
 describe('reviewer routes', () => {
   beforeEach(() => {
@@ -150,7 +151,64 @@ describe('studio routes', () => {
       updatedAt: expect.any(String),
       createdAt: expect.any(String) 
     });
-
   });
+
+  it('gets all studios via GET', async () => {
+    
+    await Studio.bulkCreate([
+      {
+        name: 'Chatta Studio',
+        city: 'Chattanooga',
+        state: 'TN',
+        country: 'USA'
+      },
+      {
+        name: 'Studio 54',
+        city: 'New York',
+        state: 'NY',
+        country: 'USA'
+      },
+      {
+        name: 'Unknown Inc.',
+        city: '',
+        state: '',
+        country: ''
+      }
+    ]);
+
+    const res = await request(app).get('/api/v1/studios');
+    expect(res.body).toEqual(
+      [{
+        id: expect.any(Number),
+        name: 'Chatta Studio',
+        city: 'Chattanooga',
+        state: 'TN',
+        country: 'USA',
+        updatedAt: expect.any(String),
+        createdAt: expect.any(String) 
+      },
+      {
+        id: expect.any(Number),
+        name: 'Studio 54',
+        city: 'New York',
+        state: 'NY',
+        country: 'USA',
+        updatedAt: expect.any(String),
+        createdAt: expect.any(String) 
+      },
+      {
+        id: expect.any(Number),
+        name: 'Unknown Inc.',
+        city: '',
+        state: '',
+        country: '',
+        updatedAt: expect.any(String),
+        createdAt: expect.any(String) 
+      }],
+      
+    );
+  
+  });
+
 
 }); 
