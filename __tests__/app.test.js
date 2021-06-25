@@ -41,8 +41,6 @@ describe('demo routes', () => {
       }
     ]);
 
-    
-
     const res = await request(app).get('/api/v1/reviewers');
     expect(res.body).toEqual(
       [{
@@ -69,5 +67,44 @@ describe('demo routes', () => {
       
     );
   
+  });
+
+  it('selects one user by id via GET', async () => {
+    const reviewer = await Reviewer.create({
+      userName: 'Harry',
+      company: 'Hogwarts',
+      
+    });
+
+    const res = await request(app).get('/api/v1/reviewers/1');
+    expect(res.body).toEqual({ 
+      ...reviewer.toJSON(), 
+      updatedAt: expect.any(String),
+      createdAt: expect.any(String) });
+  });
+
+  it('updates a reviewer via PUT', async () => {
+
+    const reviewer = await Reviewer.create({
+      userName: 'Bilbo',
+      company: 'Shire'
+    });
+
+    const res = await request(app)
+      .put('/api/v1/reviewers/1')
+      .send({
+        userName: 'Frodo',
+        company: 'Shire'
+      });
+
+    expect(res.body).toEqual({
+      ...reviewer.toJSON(),
+      userName: 'Frodo',
+      company: 'Shire',
+      updatedAt: expect.any(String),
+      createdAt: expect.any(String)
+    });
+
+    expect(res.body.updatedAt).not.toEqual(reviewer.updatedAt.toISOString());
   });
 });
