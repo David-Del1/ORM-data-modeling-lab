@@ -3,7 +3,7 @@ import request from 'supertest';
 import app from '../lib/app.js';
 import Reviewer from '../lib/models/Reviewer.js';
 
-describe('demo routes', () => {
+describe('reviewer routes', () => {
   beforeEach(() => {
     return sequelize.sync({ force: true });
   }); 
@@ -123,3 +123,34 @@ describe('demo routes', () => {
     });
   });
 });
+
+describe('studio routes', () => {
+  
+  beforeEach(() => {
+    return sequelize.sync({ force: true });
+  });
+
+  it('adds a studio with POST', async () => {
+
+    const res = await request(app)
+      .post('/api/v1/studios')
+      .send ({
+        name: 'Hollywood',
+        city: 'Orlando',
+        state: 'FL',
+        country: 'USA'
+      });
+
+    expect(res.body).toEqual({
+      id: 1,
+      name: 'Hollywood',
+      city: 'Orlando',
+      state: 'FL',
+      country: 'USA',
+      updatedAt: expect.any(String),
+      createdAt: expect.any(String) 
+    });
+
+  });
+
+}); 
