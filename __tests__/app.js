@@ -3,7 +3,8 @@ import request from 'supertest';
 import app from '../lib/app.js';
 import Reviewer from '../lib/models/Reviewer.js';
 
-describe('demo routes', () => {
+
+describe.skip('demo routes', () => {
   beforeEach(() => {
     return sequelize.sync({ force: true });
   }); 
