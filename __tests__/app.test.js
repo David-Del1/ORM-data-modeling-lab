@@ -181,31 +181,16 @@ describe('studio routes', () => {
       [{
         id: expect.any(Number),
         name: 'Chatta Studio',
-        city: 'Chattanooga',
-        state: 'TN',
-        country: 'USA',
-        updatedAt: expect.any(String),
-        createdAt: expect.any(String) 
       },
       {
         id: expect.any(Number),
         name: 'Studio 54',
-        city: 'New York',
-        state: 'NY',
-        country: 'USA',
-        updatedAt: expect.any(String),
-        createdAt: expect.any(String) 
       },
       {
         id: expect.any(Number),
         name: 'Unknown Inc.',
-        city: '',
-        state: '',
-        country: '',
-        updatedAt: expect.any(String),
-        createdAt: expect.any(String) 
       }],
-      
+    
     );
   
   });
