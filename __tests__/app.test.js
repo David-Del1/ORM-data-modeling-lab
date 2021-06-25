@@ -107,4 +107,19 @@ describe('demo routes', () => {
 
     expect(res.body.updatedAt).not.toEqual(reviewer.updatedAt.toISOString());
   });
+
+  it('deletes a reviewer', async () => {
+    const reviewer = await Reviewer.create({
+      userName: 'MermaidMan',
+      company: 'Underwater Protection Agency'
+    });
+    
+    const res = await request(app)
+      .delete('/api/v1/reviewers/1');
+    expect(res.body).not.toEqual({
+      ...reviewer.toJSON(),
+      updatedAt: expect.any(String),
+      createdAt: expect.any(String)
+    });
+  });
 });
