@@ -113,13 +113,10 @@ describe('demo routes', () => {
       userName: 'MermaidMan',
       company: 'Underwater Protection Agency'
     });
-
-    console.log(reviewer);
-    console.log(...reviewer);
-
+    
     const res = await request(app)
       .delete('/api/v1/reviewers/1');
-    expect(res.body).toEqual({
+    expect(res.body).not.toEqual({
       ...reviewer.toJSON(),
       updatedAt: expect.any(String),
       createdAt: expect.any(String)
