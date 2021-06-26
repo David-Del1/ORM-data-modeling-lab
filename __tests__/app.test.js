@@ -3,6 +3,7 @@ import request from 'supertest';
 import app from '../lib/app.js';
 import Reviewer from '../lib/models/Reviewer.js';
 import Studio from '../lib/models/Studio.js';
+import Film from '../lib/models/Film.js';
 
 describe('reviewer routes', () => {
   beforeEach(() => {
@@ -213,27 +214,93 @@ describe('studio routes', () => {
 });
 
 describe('Film tests', () => {
+
   beforeEach(() => {
     return sequelize.sync({ force: true });
   }); 
 
   it('creates a new film via POST', async () => {
+
+    const testingStudio = await Studio.create(
+      {
+        name: 'Chatta Studio',
+        city: 'Chattanooga',
+        state: 'TN',
+        country: 'USA'
+      }
+    );
+
     const res = await request(app)
       .post('/api/v1/films')
       .send ({
         title: 'Spooky Bandit',
-        studio: 1,
+        studio: testingStudio.id,
         released: 2009
-
       });
 
     expect(res.body).toEqual({
       id: 1,
       title: 'Spooky Bandit',
-      studio: '1',
+      studio: 1,
       released: 2009,
       updatedAt: expect.any(String),
-      createdAt: expect.any(String) 
+      createdAt: expect.any(String),
     });
+  });
+
+  it('gets all films', async () => {
+
+    await Studio.create(
+      {
+        name: 'Chatta Studio',
+        city: 'Chattanooga',
+        state: 'TN',
+        country: 'USA'
+      }
+    );
+
+    await Film.bulkCreate([
+      {
+        title: 'Oculus',
+        studio: 1,
+        released: 2014
+      },
+      {
+        title: 'Tenet',
+        studio: 1,
+        released: 2020
+      },
+      {
+        title: 'Cronos',
+        studio: 1,
+        released: 1993
+      }
+    ]);
+
+    const res = await request(app).get('/api/v1/films');
+
+    expect(res.body).toEqual([
+
+      {
+        id: 1,
+        title: 'Oculus',
+        released: 2014,
+        Studio: { id: 1, name: 'Chatta Studio' }
+      },
+      {
+        id: 2,
+        title: 'Tenet',
+        released: 2020,
+        Studio: { id: 1, name: 'Chatta Studio' }
+      },
+      {
+        id: 3,
+        title: 'Cronos',
+        released: 1993,
+        Studio: { id: 1, name: 'Chatta Studio' }
+      }
+
+    ]
+    );
   });
 });
