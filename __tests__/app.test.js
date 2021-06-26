@@ -268,7 +268,7 @@ describe('Film tests', () => {
         country: 'Mexico'
       }
     );
-
+    
     await Film.bulkCreate([
       {
         title: 'Oculus',
