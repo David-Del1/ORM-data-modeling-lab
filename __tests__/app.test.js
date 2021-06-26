@@ -6,6 +6,7 @@ import Studio from '../lib/models/Studio.js';
 import Film from '../lib/models/Film.js';
 
 describe('reviewer routes', () => {
+
   beforeEach(() => {
     return sequelize.sync({ force: true });
   }); 
