@@ -2,9 +2,10 @@ import sequelize from '../lib/utils/db.js';
 import request from 'supertest';
 import app from '../lib/app.js';
 import Reviewer from '../lib/models/Reviewer.js';
+import Studio from '../lib/models/Studio.js';
 
+describe('reviewer routes', () => {
 
-describe.skip('demo routes', () => {
   beforeEach(() => {
     return sequelize.sync({ force: true });
   }); 
@@ -27,7 +28,7 @@ describe.skip('demo routes', () => {
 
   it('gets all users via GET', async () => {
     
-    const user1 = await Reviewer.bulkCreate([
+    await Reviewer.bulkCreate([
       {
         userName: 'banana lover',
         company: 'banana land'
@@ -121,6 +122,119 @@ describe.skip('demo routes', () => {
       ...reviewer.toJSON(),
       updatedAt: expect.any(String),
       createdAt: expect.any(String)
+    });
+  });
+});
+
+describe('studio routes', () => {
+  
+  beforeEach(() => {
+    return sequelize.sync({ force: true });
+  });
+
+  it('adds a studio with POST', async () => {
+
+    const res = await request(app)
+      .post('/api/v1/studios')
+      .send ({
+        name: 'Hollywood',
+        city: 'Orlando',
+        state: 'FL',
+        country: 'USA'
+      });
+
+    expect(res.body).toEqual({
+      id: 1,
+      name: 'Hollywood',
+      city: 'Orlando',
+      state: 'FL',
+      country: 'USA',
+      updatedAt: expect.any(String),
+      createdAt: expect.any(String) 
+    });
+  });
+
+  it('gets all studios via GET', async () => {
+    
+    await Studio.bulkCreate([
+      {
+        name: 'Chatta Studio',
+        city: 'Chattanooga',
+        state: 'TN',
+        country: 'USA'
+      },
+      {
+        name: 'Studio 54',
+        city: 'New York',
+        state: 'NY',
+        country: 'USA'
+      },
+      {
+        name: 'Unknown Inc.',
+        city: '',
+        state: '',
+        country: ''
+      }
+    ]);
+
+    const res = await request(app).get('/api/v1/studios');
+    expect(res.body).toEqual(
+      [{
+        id: expect.any(Number),
+        name: 'Chatta Studio',
+      },
+      {
+        id: expect.any(Number),
+        name: 'Studio 54',
+      },
+      {
+        id: expect.any(Number),
+        name: 'Unknown Inc.',
+      }],
+    
+    );
+  
+  });
+
+  it('gets a studio by id via GET', async () => {
+    const studio = await Studio.create({
+      name: 'Warner Bros.',
+      city: 'Studio City',
+      state: 'CA',
+      country: 'USA'
+    });
+
+    const res = await request(app).get('/api/v1/studios/1');
+    expect(res.body).toEqual({ 
+      ...studio.toJSON(), 
+      updatedAt: expect.any(String),
+      createdAt: expect.any(String) });
+  });
+
+});
+
+describe('Film tests', () => {
+  beforeEach(() => {
+    return sequelize.sync({ force: true });
+  }); 
+
+  it('creates a new film via POST', async () => {
+    const res = await request(app)
+      .post('/api/v1/films')
+      .send ({
+        title: 'Spooky Bandit',
+        studio: 1,
+        released: 2009
+
+      });
+
+    expect(res.body).toEqual({
+      id: 1,
+      title: 'Spooky Bandit',
+      studio: '1',
+      released: 2009,
+      updatedAt: expect.any(String),
+      createdAt: expect.any(String) 
     });
   });
 });
