@@ -5,6 +5,7 @@ import Reviewer from '../lib/models/Reviewer.js';
 import Studio from '../lib/models/Studio.js';
 
 describe('reviewer routes', () => {
+
   beforeEach(() => {
     return sequelize.sync({ force: true });
   }); 
