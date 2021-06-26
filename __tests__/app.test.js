@@ -260,6 +260,15 @@ describe('Film tests', () => {
       }
     );
 
+    await Studio.create(
+      {
+        name: 'Test Studio',
+        city: 'Mexico City',
+        state: 'Mexico',
+        country: 'Mexico'
+      }
+    );
+
     await Film.bulkCreate([
       {
         title: 'Oculus',
@@ -273,7 +282,7 @@ describe('Film tests', () => {
       },
       {
         title: 'Cronos',
-        studio: 1,
+        studio: 2,
         released: 1993
       }
     ]);
@@ -298,7 +307,7 @@ describe('Film tests', () => {
         id: 3,
         title: 'Cronos',
         released: 1993,
-        Studio: { id: 1, name: 'Chatta Studio' }
+        Studio: { id: 2, name: 'Test Studio' }
       }
 
     ]
