@@ -46,7 +46,7 @@ describe('actor routes', () => {
       },
     ]);
 
-    const res = await request(app).get('/api/v1/reviewers');
+    const res = await request(app).get('/api/v1/actors');
     expect(res.body).toEqual(
       [{
         id: expect.any(Number),
@@ -54,7 +54,7 @@ describe('actor routes', () => {
         dob: '2001-12-14',
         pob: 'Krypton',
         updatedAt: expect.any(String),
-        createdAt: expect.any(String) 
+        createdAt: expect.any(String)
       },
       {
         id: expect.any(Number),
@@ -62,7 +62,7 @@ describe('actor routes', () => {
         dob: '1801-12-14',
         pob: 'Denial of Entry',
         updatedAt: expect.any(String),
-        createdAt: expect.any(String) 
+        createdAt: expect.any(String)
       },
       {
         id: expect.any(Number),
@@ -70,7 +70,7 @@ describe('actor routes', () => {
         dob: '2101-12-14',
         pob: 'Your lovely nightmares',
         updatedAt: expect.any(String),
-        createdAt: expect.any(String) 
+        createdAt: expect.any(String)
 
       }]
     );
