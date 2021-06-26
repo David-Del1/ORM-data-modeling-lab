@@ -75,4 +75,5 @@ describe('actor routes', () => {
       }]
     );
   });
+  it('selects one actor by id via GET')
 });
