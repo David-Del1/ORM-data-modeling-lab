@@ -504,29 +504,13 @@ describe('Review tests', () => {
 
   it('gets review from Review', async () => {
 
-    await Studio.bulkCreate([
-      {
-        name: 'Chatta Studio',
-        city: 'Chattanooga',
-        state: 'TN',
-        country: 'USA'
-      },
-      {
-        name: 'Studio 54',
-        city: 'New York',
-        state: 'NY',
-        country: 'USA'
-      },
-      {
-        name: 'Unknown Inc.',
-        city: '',
-        state: '',
-        country: ''
-      }
-    ]);
-
     await Film.create({
       title: 'Big Showdown in little Durango',
+      released: 2018
+    });
+
+    await Film.create({
+      title: 'Big Showdown in big Durango',
       released: 2018
     });
 
@@ -535,6 +519,13 @@ describe('Review tests', () => {
       review: 'Not as advertised.',
       reviewer: '1',
       film: 1
+    });
+
+    await Review.create({
+      rating: 4,
+      review: 'As advertised.',
+      reviewer: '1',
+      film: 2
     });
 
     const res = await request(app).get('/api/v1/reviews');
@@ -547,6 +538,15 @@ describe('Review tests', () => {
         Film: {
           id: 1,
           title: 'Big Showdown in little Durango'
+        },
+      },
+      {
+        id: 2,
+        rating: 4,
+        review: 'As advertised.',
+        Film: {
+          id: 2,
+          title: 'Big Showdown in big Durango'
         }
       }]
     );
