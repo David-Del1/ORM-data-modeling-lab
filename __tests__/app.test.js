@@ -4,12 +4,15 @@ import app from '../lib/app.js';
 import Reviewer from '../lib/models/Reviewer.js';
 import Studio from '../lib/models/Studio.js';
 import Film from '../lib/models/Film.js';
+import Actor from '../lib/models/Actor.js';
+import Review from '../lib/models/Review.js';
 
 describe('reviewer routes', () => {
 
   beforeEach(() => {
     return sequelize.sync({ force: true });
   }); 
+
   it('creates a user via POST', async () => {
     const res = await request(app)
       .post('/api/v1/reviewers')
@@ -27,7 +30,7 @@ describe('reviewer routes', () => {
     });
   });
 
-  it('gets all users via GET', async () => {
+  it('gets all reviewers via GET', async () => {
     
     await Reviewer.bulkCreate([
       {
@@ -50,30 +53,25 @@ describe('reviewer routes', () => {
         id: expect.any(Number),
         userName: 'banana lover',
         company: 'banana land',
-        updatedAt: expect.any(String),
-        createdAt: expect.any(String) 
       },
       {
         id: expect.any(Number),
         userName: 'banana enthusiast',
         company: 'banana republic',
-        updatedAt: expect.any(String),
-        createdAt: expect.any(String) 
       },
       {
         id: expect.any(Number),
         userName: 'banana fanatic',
         company: 'banana inc',
-        updatedAt: expect.any(String),
-        createdAt: expect.any(String) 
       }],
       
     );
   
   });
 
-  it('selects one user by id via GET', async () => {
-    const reviewer = await Reviewer.create({
+  it('selects one reviewer by id via GET', async () => {
+
+    await Reviewer.create({
       userName: 'Harry',
       company: 'Hogwarts',
       
@@ -81,9 +79,10 @@ describe('reviewer routes', () => {
 
     const res = await request(app).get('/api/v1/reviewers/1');
     expect(res.body).toEqual({ 
-      ...reviewer.toJSON(), 
-      updatedAt: expect.any(String),
-      createdAt: expect.any(String) });
+      id: 1,
+      userName: 'Harry',
+      company: 'Hogwarts'
+    });
   });
 
   it('updates a reviewer via PUT', async () => {
@@ -198,18 +197,44 @@ describe('studio routes', () => {
   });
 
   it('gets a studio by id via GET', async () => {
-    const studio = await Studio.create({
+    
+    const coolStudio = await Studio.create({
       name: 'Warner Bros.',
       city: 'Studio City',
       state: 'CA',
       country: 'USA'
     });
 
+    const okFilms = await Film.bulkCreate([
+      {
+        title: 'Oculus',
+        studio: 1,
+        released: 2014
+      },
+      {
+        title: 'Tenet',
+        studio: 1,
+        released: 2020
+      },
+      {
+        title: 'Cronos',
+        studio: 1,
+        released: 1993
+      }
+    ]);
+
+    await coolStudio.addFilm(okFilms);
+
     const res = await request(app).get('/api/v1/studios/1');
+
     expect(res.body).toEqual({ 
-      ...studio.toJSON(), 
-      updatedAt: expect.any(String),
-      createdAt: expect.any(String) });
+      id: 1,
+      name: 'Warner Bros.',
+      city: 'Studio City',
+      state: 'CA',
+      country: 'USA',
+      Films: [{ id: expect.any(Number), title: expect.any(String) }, { id: expect.any(Number), title: expect.any(String) }, { id: expect.any(Number), title: expect.any(String) }]
+    });
   });
 
 });
@@ -222,7 +247,7 @@ describe('Film tests', () => {
 
   it('creates a new film via POST', async () => {
 
-    const testingStudio = await Studio.create(
+    await Studio.create(
       {
         name: 'Chatta Studio',
         city: 'Chattanooga',
@@ -235,7 +260,7 @@ describe('Film tests', () => {
       .post('/api/v1/films')
       .send ({
         title: 'Spooky Bandit',
-        studio: testingStudio.id,
+        studio: 1,
         released: 2009
       });
 
@@ -246,6 +271,7 @@ describe('Film tests', () => {
       released: 2009,
       updatedAt: expect.any(String),
       createdAt: expect.any(String),
+      fromStudio: null
     });
   });
 
@@ -313,4 +339,295 @@ describe('Film tests', () => {
     ]
     );
   });
+});
+
+describe('actor routes', () => {
+
+  beforeEach(() => {
+    return sequelize.sync({ force: true });
+  }); 
+
+  it('creates an actor via POST', async () => {
+    const res = await request(app)
+      .post('/api/v1/actors')
+      .send({
+        name: 'Spongebob Squidpants',
+        dob: '2001-12-14',
+        pob: 'Krypton'
+      });
+
+    expect(res.body).toEqual({
+      id: expect.any(Number),
+      name: 'Spongebob Squidpants',
+      dob: '2001-12-14',
+      pob: 'Krypton',
+      updatedAt: expect.any(String),
+      createdAt: expect.any(String)
+    });
+  });
+
+  it('gets all actors via GET', async () => {
+
+    await Actor.bulkCreate([
+      {
+        name: 'Spongebob Squidpants',
+        dob: '2001-12-14',
+        pob: 'Krypton'
+      },
+      {
+        name: 'Lydia DoorBlocker',
+        dob: '1801-12-14',
+        pob: 'Denial of Entry'
+      },
+      {
+        name: 'Jason BourneTwoBeWild',
+        dob: '2101-12-14',
+        pob: 'Your lovely nightmares'
+      },
+    ]);
+
+    const res = await request(app)
+      .get('/api/v1/actors');
+
+    expect(res.body).toEqual(
+      [{
+        id: expect.any(Number),
+        name: 'Spongebob Squidpants',
+      },
+      {
+        id: expect.any(Number),
+        name: 'Lydia DoorBlocker',
+      },
+      {
+        id: expect.any(Number),
+        name: 'Jason BourneTwoBeWild',
+      }]
+    );
+
+  });
+
+  it('get an actor via GET', async () => {
+
+    const newActor = await Actor.create(
+      {
+        name: 'Spongebob Squidpants',
+        dob: '2001-12-14',
+        pob: 'Krypton'
+      }
+    );
+    
+    await Studio.bulkCreate([
+      {
+        name: 'Chatta Studio',
+        city: 'Chattanooga',
+        state: 'TN',
+        country: 'USA'
+      },
+      {
+        name: 'Studio 54',
+        city: 'New York',
+        state: 'NY',
+        country: 'USA'
+      },
+      {
+        name: 'Unknown Inc.',
+        city: '',
+        state: '',
+        country: ''
+      }
+    ]);
+
+    const newFilms = await Film.bulkCreate([
+      {
+        title: 'Oculus',
+        studio: 1,
+        released: 2014
+      },
+      {
+        title: 'Tenet',
+        studio: 1,
+        released: 2020
+      },
+      {
+        title: 'Cronos',
+        studio: 2,
+        released: 1993
+      }
+    ]);
+
+    await newActor.addFilm(newFilms[0]);
+
+    const res = await request(app)
+      .get('/api/v1/actors/1');
+
+    expect(res.body).toEqual({
+      name: 'Spongebob Squidpants',
+      dob: '2001-12-14',
+      pob: 'Krypton',
+      Films: [{
+        id: 1,
+        title: 'Oculus',
+        released: 2014
+      }]
+    }
+    );
+  });
+
+});
+
+describe('review routes', () => {
+
+  beforeEach(() => {
+    return sequelize.sync({ force: true });
+  });
+
+  it('creates a review via POST', async () => {
+
+    await Studio.bulkCreate([
+      {
+        name: 'Chatta Studio',
+        city: 'Chattanooga',
+        state: 'TN',
+        country: 'USA'
+      },
+      {
+        name: 'Studio 54',
+        city: 'New York',
+        state: 'NY',
+        country: 'USA'
+      },
+      {
+        name: 'Unknown Inc.',
+        city: '',
+        state: '',
+        country: ''
+      }
+    ]);
+
+    await Film.bulkCreate([
+      {
+        title: 'Oculus',
+        studio: 1,
+        released: 2014
+      },
+      {
+        title: 'Tenet',
+        studio: 1,
+        released: 2020
+      },
+      {
+        title: 'Cronos',
+        studio: 2,
+        released: 1993
+      }
+    ]);
+
+    const res = await request(app)
+      .post('/api/v1/reviews')
+      .send({
+        rating: 2,
+        reviewer:1,
+        review: 'a good movie to make you forget about your life',
+        film: 1
+      });
+
+    expect(res.body).toEqual({
+      id: 1,
+      rating: 2,
+      reviewer: '1',
+      review: 'a good movie to make you forget about your life',
+      film: 1,
+      updatedAt: expect.any(String),
+      createdAt: expect.any(String) 
+    });
+
+  });
+
+  it('gets 100 highest rates reviews', async () => {
+
+    await Studio.bulkCreate([
+      {
+        name: 'Chatta Studio',
+        city: 'Chattanooga',
+        state: 'TN',
+        country: 'USA'
+      },
+      {
+        name: 'Studio 54',
+        city: 'New York',
+        state: 'NY',
+        country: 'USA'
+      },
+      {
+        name: 'Unknown Inc.',
+        city: '',
+        state: '',
+        country: ''
+      }
+    ]);
+
+    await Film.bulkCreate([
+      {
+        title: 'Oculus',
+        studio: 1,
+        released: 2014
+      },
+      {
+        title: 'Tenet',
+        studio: 1,
+        released: 2020
+      },
+      {
+        title: 'Cronos',
+        studio: 2,
+        released: 1993
+      }
+    ]);
+
+    await Review.create({
+      rating: 4,
+      reviewer: '1',
+      review: 'scary',
+      film: 1
+    });
+
+    await Review.create({
+      rating: 5,
+      reviewer: '1',
+      review: 'for the future!',
+      film: 2
+    });
+
+    await Review.create({
+      rating: 3,
+      reviewer: '1',
+      review: 'vampires',
+      film: 3
+    });
+
+    const res = await request(app)
+      .get('/api/v1/reviews');
+
+    expect(res.body).toEqual([
+      { 
+        id: 2,
+        rating: 5,
+        review: 'for the future!',
+        Film: { id: 2, title: 'Tenet' }
+      },
+      { 
+        id: 1,
+        rating: 4,
+        review: 'scary',
+        Film: { id: 1, title: 'Oculus' }
+      },
+      { 
+        id: 3,
+        rating: 3,
+        review: 'vampires',
+        Film: { id: 3, title: 'Cronos' }
+      }
+    ]);
+  });
+
 });
