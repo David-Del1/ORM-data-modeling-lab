@@ -26,7 +26,8 @@ describe('reviewer routes', () => {
       userName: 'Tucker',
       company: 'NYT',
       updatedAt: expect.any(String),
-      createdAt: expect.any(String) 
+      createdAt: expect.any(String),
+      reviews: null
     });
   });
 
