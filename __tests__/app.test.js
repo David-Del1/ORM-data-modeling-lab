@@ -74,18 +74,25 @@ describe('reviewer routes', () => {
 
   });
 
-  it('selects one user by id via GET', async () => {
-    const reviewer = await Reviewer.create({
+  it('selects one reviewer by id via GET', async () => {
+
+    await Review.create({
+      rating: 3,
+      reviewer: '1',
+      review: 'bleh'
+    });
+
+    await Reviewer.create({
       userName: 'Harry',
       company: 'Hogwarts',
-
     });
 
     const res = await request(app).get('/api/v1/reviewers/1');
+
     expect(res.body).toEqual({
-      ...reviewer.toJSON(),
-      updatedAt: expect.any(String),
-      createdAt: expect.any(String)
+      id: 1,
+      userName: 'Harry',
+      company: 'Hogwarts',
     });
   });
 
@@ -449,70 +456,121 @@ describe('actor routes', () => {
 
 });
 
-describe('Film tests', () => {
+describe('Review tests', () => {
 
   beforeEach(() => {
     return sequelize.sync({ force: true });
   });
 
-  it('gets review from Review', async () => {
+  it('makes a review using POST', async () => {
+
+    await Studio.bulkCreate([
+      {
+        name: 'Chatta Studio',
+        city: 'Chattanooga',
+        state: 'TN',
+        country: 'USA'
+      },
+      {
+        name: 'Studio 54',
+        city: 'New York',
+        state: 'NY',
+        country: 'USA'
+      },
+      {
+        name: 'Unknown Inc.',
+        city: '',
+        state: '',
+        country: ''
+      }
+    ]);
+
     await Film.create({
-      id: 3,
       title: 'Big Showdown in little Durango',
       released: 2018
     });
-    await Review.bulkCreate([
-      {
-        rating: 2,
-        review: 'Not as advertised. My daughter cried the whole time. Who knew "My little Pony" was the code name for an assassination plot. THIS IS A THRILLER, NOT A CHILDRENDS FILM. Would have given one star, but the explosions were pretty good. do not recommend',
-        film: 1,
-        reviewer: '1087'
-      },
-      {
-        rating: 4,
-        review: 'pretty cool',
-        film: 2,
-        reviewer: '1397'
-      },
-      {
-        rating: 5,
-        review: 'I loved Spongebob Squidpants as Obe Juan in this thrilling mashup of Malcom X meets Barney and friends. Definitely recommend',
-        film: 3,
-        reviewer: '1423'
-      }
 
+    await Reviewer.create({
+      userName: 'Bob',
+      company: 'Blah Inc.'
+    });
 
-    ]);
+    const res = await request(app)
+      .post('/api/v1/reviews')
+      .send({
+        rating: 3,
+        reviewer: 1,
+        review: 'blah',
+      });
+
+    expect(res.body).toEqual({
+      id: 1,
+      rating: 3,
+      reviewer: 1,
+      review: 'blah',
+      updatedAt: expect.any(String),
+      createdAt: expect.any(String),
+      film: null, // come back to this
+    });
+  });
+
+  it('gets review from Review', async () => {
+
+    await Film.create({
+      title: 'Big Showdown in little Durango',
+      released: 2018
+    });
+
+    await Film.create({
+      title: 'Big Showdown in big Durango',
+      released: 2018
+    });
+
+    await Reviewer.create({
+      userName: 'Bob',
+      company: 'Blah Inc.'
+    });
+
+    await Reviewer.create({
+      userName: 'Miranda',
+      company: 'Blah Inc.'
+    });
+
+    await Review.create({
+      rating: 2,
+      review: 'Not as advertised.',
+      reviewer: 1,
+      film: 1
+    });
+
+    await Review.create({
+      rating: 4,
+      review: 'As advertised.',
+      reviewer: 2,
+      film: 2
+    });
 
     const res = await request(app).get('/api/v1/reviews');
+
     expect(res.body).toEqual(
       [{
+        id: 1,
         rating: 2,
-        review: 'Not as advertised. My daughter cried the whole time. Who knew "My little Pony" was the code name for an assassination plot. THIS IS A THRILLER, NOT A CHILDRENDS FILM. Would have given one star, but the explosions were pretty good. do not recomend',
-
-        film: {
+        review: 'Not as advertised.',
+        Film: {
           id: 1,
-          title: 'Say Hello to my little Friend, Pony'
-        },
-      },
-      {
-        rating: 4,
-        review: 'pretty cool',
-        film: {
-          id: 2,
-          title: 'Shackin not Sturred, Ya heard'
-        },
-      },
-      {
-        rating: 5,
-        review: 'I loved Spongebob Squidpants as Obe Juan in this thrilling mashup of Malcom X meets Barney and friends. Definitely recommend',
-        film: {
-          id: 3,
           title: 'Big Showdown in little Durango'
         },
-
-      }
-      ]
+      },
+      {
+        id: 2,
+        rating: 4,
+        review: 'As advertised.',
+        Film: {
+          id: 2,
+          title: 'Big Showdown in big Durango'
+        }
+      }]
     );
 
   });
