@@ -457,7 +457,7 @@ describe('Film tests', () => {
 
   it('gets review from Review', async () => {
     await Film.create({
-      id: 1,
+      id: 3,
       title: 'Big Showdown in little Durango',
       released: 2018
     });
@@ -465,17 +465,20 @@ describe('Film tests', () => {
       {
         rating: 2,
         review: 'Not as advertised. My daughter cried the whole time. Who knew "My little Pony" was the code name for an assassination plot. THIS IS A THRILLER, NOT A CHILDRENDS FILM. Would have given one star, but the explosions were pretty good. do not recommend',
-        film: 7
+        film: 1,
+        reviewer: '1087'
       },
       {
         rating: 4,
         review: 'pretty cool',
-        film: 17
+        film: 2,
+        reviewer: '1397'
       },
       {
         rating: 5,
         review: 'I loved Spongebob Squidpants as Obe Juan in this thrilling mashup of Malcom X meets Barney and friends. Definitely recommend',
-        film: 24
+        film: 3,
+        reviewer: '1423'
       }
 
 
@@ -486,17 +489,28 @@ describe('Film tests', () => {
       [{
         rating: 2,
         review: 'Not as advertised. My daughter cried the whole time. Who knew "My little Pony" was the code name for an assassination plot. THIS IS A THRILLER, NOT A CHILDRENDS FILM. Would have given one star, but the explosions were pretty good. do not recomend',
-        film: 7,
+
+        film: {
+          id: 1,
+          title: 'Say Hello to my little Friend, Pony'
+        },
       },
       {
         rating: 4,
         review: 'pretty cool',
-        film: 17
+        film: {
+          id: 2,
+          title: 'Shackin not Sturred, Ya heard'
+        },
       },
       {
         rating: 5,
         review: 'I loved Spongebob Squidpants as Obe Juan in this thrilling mashup of Malcom X meets Barney and friends. Definitely recommend',
-        film: 24
+        film: {
+          id: 3,
+          title: 'Big Showdown in little Durango'
+        },
+
       }
       ]
     );
