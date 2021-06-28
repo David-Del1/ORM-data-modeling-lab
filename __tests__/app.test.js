@@ -74,18 +74,25 @@ describe('reviewer routes', () => {
 
   });
 
-  it('selects one user by id via GET', async () => {
-    const reviewer = await Reviewer.create({
+  it('selects one reviewer by id via GET', async () => {
+
+    await Review.create({
+      rating: 3,
+      reviewer: '1',
+      review: 'bleh'
+    });
+
+    await Reviewer.create({
       userName: 'Harry',
       company: 'Hogwarts',
-
     });
 
     const res = await request(app).get('/api/v1/reviewers/1');
+
     expect(res.body).toEqual({
-      ...reviewer.toJSON(),
-      updatedAt: expect.any(String),
-      createdAt: expect.any(String)
+      id: 1,
+      userName: 'Harry',
+      company: 'Hogwarts',
     });
   });
 
@@ -483,22 +490,27 @@ describe('Review tests', () => {
       released: 2018
     });
 
+    await Reviewer.create({
+      userName: 'Bob',
+      company: 'Blah Inc.'
+    });
+
     const res = await request(app)
       .post('/api/v1/reviews')
       .send({
         rating: 3,
-        reviewer: '1',
+        reviewer: 1,
         review: 'blah',
       });
 
     expect(res.body).toEqual({
       id: 1,
       rating: 3,
-      reviewer: '1',
+      reviewer: 1,
       review: 'blah',
       updatedAt: expect.any(String),
       createdAt: expect.any(String),
-      film: null // come back to this
+      film: null, // come back to this
     });
   });
 
@@ -514,17 +526,27 @@ describe('Review tests', () => {
       released: 2018
     });
 
+    await Reviewer.create({
+      userName: 'Bob',
+      company: 'Blah Inc.'
+    });
+
+    await Reviewer.create({
+      userName: 'Miranda',
+      company: 'Blah Inc.'
+    });
+
     await Review.create({
       rating: 2,
       review: 'Not as advertised.',
-      reviewer: '1',
+      reviewer: 1,
       film: 1
     });
 
     await Review.create({
       rating: 4,
       review: 'As advertised.',
-      reviewer: '1',
+      reviewer: 2,
       film: 2
     });
 
