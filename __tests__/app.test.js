@@ -17,13 +17,15 @@ describe('reviewer routes', () => {
       .post('/api/v1/reviewers')
       .send({
         userName: 'Tucker',
-        company: 'NYT'
+        company: 'NYT',
+        FilmId: null
       });
 
     expect(res.body).toEqual({
       id: 1,
       userName: 'Tucker',
       company: 'NYT',
+      FilmId: null,
       updatedAt: expect.any(String),
       createdAt: expect.any(String)
     });
@@ -52,6 +54,7 @@ describe('reviewer routes', () => {
         id: expect.any(Number),
         userName: 'banana lover',
         company: 'banana land',
+        FilmId: null,
         updatedAt: expect.any(String),
         createdAt: expect.any(String)
       },
@@ -59,6 +62,7 @@ describe('reviewer routes', () => {
         id: expect.any(Number),
         userName: 'banana enthusiast',
         company: 'banana republic',
+        FilmId: null,
         updatedAt: expect.any(String),
         createdAt: expect.any(String)
       },
@@ -66,6 +70,7 @@ describe('reviewer routes', () => {
         id: expect.any(Number),
         userName: 'banana fanatic',
         company: 'banana inc',
+        FilmId: null,
         updatedAt: expect.any(String),
         createdAt: expect.any(String)
       }],
@@ -76,16 +81,24 @@ describe('reviewer routes', () => {
 
   it('selects one reviewer by id via GET', async () => {
 
+    await Film.create({
+      title: 'Squishy Boy',
+      released: 2007
+    });
+
+    await Reviewer.create({
+      userName: 'Harry',
+      company: 'Hogwarts',
+      FilmId: 1
+    });
+
     await Review.create({
       rating: 3,
       reviewer: '1',
       review: 'bleh'
     });
 
-    await Reviewer.create({
-      userName: 'Harry',
-      company: 'Hogwarts',
-    });
+    
 
     const res = await request(app).get('/api/v1/reviewers/1');
 
@@ -93,6 +106,12 @@ describe('reviewer routes', () => {
       id: 1,
       userName: 'Harry',
       company: 'Hogwarts',
+      Reviews: [{
+        id: 1,
+        rating: 3,
+        review: 'bleh',
+        Film: { id: 1, title: 'Squishy Boy' }
+      }]
     });
   });
 
