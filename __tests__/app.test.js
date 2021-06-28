@@ -4,6 +4,7 @@ import app from '../lib/app.js';
 import Reviewer from '../lib/models/Reviewer.js';
 import Studio from '../lib/models/Studio.js';
 import Film from '../lib/models/Film.js';
+import Actor from '../lib/models/Actor.js';
 
 describe('reviewer routes', () => {
 
@@ -310,7 +311,136 @@ describe('Film tests', () => {
         Studio: { id: 2, name: 'Test Studio' }
       }
 
-    ]
+    ]);
+  });
+
+  it('gets film by id via GET', async () => {
+
+    await Studio.create(
+      {
+        name: 'Chatta Studio',
+        city: 'Chattanooga',
+        state: 'TN',
+        country: 'USA'
+      }
     );
+
+    await Film.create({
+      title: 'Oculus',
+      studio: 1,
+      released: 2014
+    });
+
+    const res = await request(app).get('/api/v1/films/1');
+    expect(res.body).toEqual({
+      title: 'Oculus',
+      released: 2014,
+      Studio: { id: 1, name: 'Chatta Studio' }
+    }); 
+  });
+});
+
+describe('actor routes', () => {
+  beforeEach(() => {
+    return sequelize.sync({ force: true });
+  });
+  it('creates and actor via POST', async () => {
+    const res = await request(app)
+      .post('/api/v1/actors')
+      .send({
+        name: 'Spongebob Squidpants',
+        dob: '2001-12-14',
+        pob: 'Krypton'
+      });
+
+    expect(res.body).toEqual({
+      id: expect.any(Number),
+      name: 'Spongebob Squidpants',
+      dob: '2001-12-14',
+      pob: 'Krypton',
+      updatedAt: expect.any(String),
+      createdAt: expect.any(String)
+    });
+  });
+
+  it('gets all actors via GET', async () => {
+
+    await Actor.bulkCreate([
+      {
+        name: 'Spongebob Squidpants',
+        dob: '2001-12-14',
+        pob: 'Krypton'
+      },
+      {
+        name: 'Lydia DoorBlocker',
+        dob: '1801-12-14',
+        pob: 'Denial of Entry'
+      },
+      {
+        name: 'Jason BourneTwoBeWild',
+        dob: '2101-12-14',
+        pob: 'Your lovely nightmares'
+      },
+    ]);
+
+    const res = await request(app).get('/api/v1/actors');
+    expect(res.body).toEqual(
+      [{
+        id: expect.any(Number),
+        name: 'Spongebob Squidpants',
+        dob: '2001-12-14',
+        pob: 'Krypton',
+        updatedAt: expect.any(String),
+        createdAt: expect.any(String)
+      },
+      {
+        id: expect.any(Number),
+        name: 'Lydia DoorBlocker',
+        dob: '1801-12-14',
+        pob: 'Denial of Entry',
+        updatedAt: expect.any(String),
+        createdAt: expect.any(String)
+      },
+      {
+        id: expect.any(Number),
+        name: 'Jason BourneTwoBeWild',
+        dob: '2101-12-14',
+        pob: 'Your lovely nightmares',
+        updatedAt: expect.any(String),
+        createdAt: expect.any(String)
+
+      }]
+    );
+  });
+
+  it('selects one actor by id via GET', async () => {
+    const actor = await Actor.create({
+      
+      name: 'Spongebob Squidpants',
+      dob: '2001-12-14',
+      pob: 'Krypton'
+      
+    });
+
+    const film = await Film.create({
+      id: '1',
+      title: 'Spooky Bandit',
+      released: 2009
+    });
+
+    actor.addFilm(film);
+
+    const res = await request(app).get('/api/v1/actors/1');
+    expect(res.body).toEqual({
+      name: 'Spongebob Squidpants',
+      dob: '2001-12-14',
+      pob: 'Krypton',
+      Films: [{
+        id: 1,
+        title: 'Spooky Bandit',
+        released: 2009
+      
+      }]
+    });
   });
 });
