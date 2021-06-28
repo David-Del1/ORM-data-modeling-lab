@@ -5,12 +5,13 @@ import Reviewer from '../lib/models/Reviewer.js';
 import Studio from '../lib/models/Studio.js';
 import Film from '../lib/models/Film.js';
 import Actor from '../lib/models/Actor.js';
+import Review from '../lib/models/Review.js';
 
 describe('reviewer routes', () => {
 
   beforeEach(() => {
     return sequelize.sync({ force: true });
-  }); 
+  });
   it('creates a user via POST', async () => {
     const res = await request(app)
       .post('/api/v1/reviewers')
@@ -24,12 +25,12 @@ describe('reviewer routes', () => {
       userName: 'Tucker',
       company: 'NYT',
       updatedAt: expect.any(String),
-      createdAt: expect.any(String) 
+      createdAt: expect.any(String)
     });
   });
 
   it('gets all users via GET', async () => {
-    
+
     await Reviewer.bulkCreate([
       {
         userName: 'banana lover',
@@ -52,39 +53,40 @@ describe('reviewer routes', () => {
         userName: 'banana lover',
         company: 'banana land',
         updatedAt: expect.any(String),
-        createdAt: expect.any(String) 
+        createdAt: expect.any(String)
       },
       {
         id: expect.any(Number),
         userName: 'banana enthusiast',
         company: 'banana republic',
         updatedAt: expect.any(String),
-        createdAt: expect.any(String) 
+        createdAt: expect.any(String)
       },
       {
         id: expect.any(Number),
         userName: 'banana fanatic',
         company: 'banana inc',
         updatedAt: expect.any(String),
-        createdAt: expect.any(String) 
+        createdAt: expect.any(String)
       }],
-      
+
     );
-  
+
   });
 
   it('selects one user by id via GET', async () => {
     const reviewer = await Reviewer.create({
       userName: 'Harry',
       company: 'Hogwarts',
-      
+
     });
 
     const res = await request(app).get('/api/v1/reviewers/1');
-    expect(res.body).toEqual({ 
-      ...reviewer.toJSON(), 
+    expect(res.body).toEqual({
+      ...reviewer.toJSON(),
       updatedAt: expect.any(String),
-      createdAt: expect.any(String) });
+      createdAt: expect.any(String)
+    });
   });
 
   it('updates a reviewer via PUT', async () => {
@@ -117,7 +119,7 @@ describe('reviewer routes', () => {
       userName: 'MermaidMan',
       company: 'Underwater Protection Agency'
     });
-    
+
     const res = await request(app)
       .delete('/api/v1/reviewers/1');
     expect(res.body).not.toEqual({
@@ -129,7 +131,7 @@ describe('reviewer routes', () => {
 });
 
 describe('studio routes', () => {
-  
+
   beforeEach(() => {
     return sequelize.sync({ force: true });
   });
@@ -138,7 +140,7 @@ describe('studio routes', () => {
 
     const res = await request(app)
       .post('/api/v1/studios')
-      .send ({
+      .send({
         name: 'Hollywood',
         city: 'Orlando',
         state: 'FL',
@@ -152,12 +154,12 @@ describe('studio routes', () => {
       state: 'FL',
       country: 'USA',
       updatedAt: expect.any(String),
-      createdAt: expect.any(String) 
+      createdAt: expect.any(String)
     });
   });
 
   it('gets all studios via GET', async () => {
-    
+
     await Studio.bulkCreate([
       {
         name: 'Chatta Studio',
@@ -193,9 +195,9 @@ describe('studio routes', () => {
         id: expect.any(Number),
         name: 'Unknown Inc.',
       }],
-    
+
     );
-  
+
   });
 
   it('gets a studio by id via GET', async () => {
@@ -207,10 +209,11 @@ describe('studio routes', () => {
     });
 
     const res = await request(app).get('/api/v1/studios/1');
-    expect(res.body).toEqual({ 
-      ...studio.toJSON(), 
+    expect(res.body).toEqual({
+      ...studio.toJSON(),
       updatedAt: expect.any(String),
-      createdAt: expect.any(String) });
+      createdAt: expect.any(String)
+    });
   });
 
 });
@@ -219,7 +222,7 @@ describe('Film tests', () => {
 
   beforeEach(() => {
     return sequelize.sync({ force: true });
-  }); 
+  });
 
   it('creates a new film via POST', async () => {
 
@@ -234,7 +237,7 @@ describe('Film tests', () => {
 
     const res = await request(app)
       .post('/api/v1/films')
-      .send ({
+      .send({
         title: 'Spooky Bandit',
         studio: testingStudio.id,
         released: 2009
@@ -269,7 +272,7 @@ describe('Film tests', () => {
         country: 'Mexico'
       }
     );
-    
+
     await Film.bulkCreate([
       {
         title: 'Oculus',
@@ -336,7 +339,7 @@ describe('Film tests', () => {
       title: 'Oculus',
       released: 2014,
       Studio: { id: 1, name: 'Chatta Studio' }
-    }); 
+    });
   });
 });
 
@@ -415,11 +418,11 @@ describe('actor routes', () => {
 
   it('selects one actor by id via GET', async () => {
     const actor = await Actor.create({
-      
+
       name: 'Spongebob Squidpants',
       dob: '2001-12-14',
       pob: 'Krypton'
-      
+
     });
 
     const film = await Film.create({
@@ -428,7 +431,7 @@ describe('actor routes', () => {
       released: 2009
     });
 
-    actor.addFilm(film);
+    await actor.addFilm(film);
 
     const res = await request(app).get('/api/v1/actors/1');
     expect(res.body).toEqual({
@@ -439,8 +442,65 @@ describe('actor routes', () => {
         id: 1,
         title: 'Spooky Bandit',
         released: 2009
-      
+
       }]
     });
   });
+
+});
+
+describe('Film tests', () => {
+
+  beforeEach(() => {
+    return sequelize.sync({ force: true });
+  });
+
+  it('gets review from Review', async () => {
+    await Film.create({
+      id: 1,
+      title: 'Big Showdown in little Durango',
+      released: 2018
+    });
+    await Review.bulkCreate([
+      {
+        rating: 2,
+        review: 'Not as advertised. My daughter cried the whole time. Who knew "My little Pony" was the code name for an assassination plot. THIS IS A THRILLER, NOT A CHILDRENDS FILM. Would have given one star, but the explosions were pretty good. do not recommend',
+        film: 7
+      },
+      {
+        rating: 4,
+        review: 'pretty cool',
+        film: 17
+      },
+      {
+        rating: 5,
+        review: 'I loved Spongebob Squidpants as Obe Juan in this thrilling mashup of Malcom X meets Barney and friends. Definitely recommend',
+        film: 24
+      }
+
+
+    ]);
+
+    const res = await request(app).get('/api/v1/reviews');
+    expect(res.body).toEqual(
+      [{
+        rating: 2,
+        review: 'Not as advertised. My daughter cried the whole time. Who knew "My little Pony" was the code name for an assassination plot. THIS IS A THRILLER, NOT A CHILDRENDS FILM. Would have given one star, but the explosions were pretty good. do not recomend',
+        film: 7,
+      },
+      {
+        rating: 4,
+        review: 'pretty cool',
+        film: 17
+      },
+      {
+        rating: 5,
+        review: 'I loved Spongebob Squidpants as Obe Juan in this thrilling mashup of Malcom X meets Barney and friends. Definitely recommend',
+        film: 24
+      }
+      ]
+    );
+
+  });
+
 });
