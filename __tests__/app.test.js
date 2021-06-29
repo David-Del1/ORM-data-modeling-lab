@@ -137,6 +137,12 @@ describe('reviewer routes', () => {
       company: 'Underwater Protection Agency'
     });
 
+    // const review = await Review.create({
+    //   id: 1,
+    //   rating: 2,
+    //   review: 'Not as advertised.'
+    // });
+
     const res = await request(app)
       .delete(`/api/v1/reviewers/${reviewer.id}`);
 
@@ -634,6 +640,21 @@ describe('Review tests', () => {
       }
       ]);
 
+  });
+
+  it('deletes a review', async () => {
+    const review = await Review.create({
+      id: 1,
+      rating: 2,
+      review: 'Not as advertised.'
+    });
+
+    const res = await request(app)
+      .delete(`/api/v1/reviews/${review.id}`);
+
+    expect(res.body).not.toEqual({
+      ...review.toJSON(),
+    });
   });
 
 });
