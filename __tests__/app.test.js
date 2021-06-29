@@ -83,16 +83,12 @@ describe('reviewer routes', () => {
       reviewer: 1,
     });
 
-    await Review.bulkCreate(
+    await Review.create(
       {
         rating: 3,
         reviewer: 1,
+        film: 1,
         review: 'bleh'
-      },
-      {
-        rating: 2,
-        reviewer: 1,
-        review: 'blah'
       });
 
     const res = await request(app)
@@ -220,13 +216,24 @@ describe('studio routes', () => {
   });
 
   it('gets a studio by id via GET', async () => {
-
     await Studio.create({
       name: 'Warner Bros.',
       city: 'Studio City',
       state: 'CA',
       country: 'USA'
     });
+
+    await Film.create({
+      title: 'Oculus',
+      StudioId: '1',
+      released: 2014
+    });
+    await Film.create({
+      title: 'Cat in Hat',
+      StudioId: '1',
+      released: 2014
+    });
+
 
     const res = await request(app)
       .get('/api/v1/studios/1');
@@ -237,14 +244,15 @@ describe('studio routes', () => {
       city: 'Studio City',
       state: 'CA',
       country: 'USA',
-      films: [
+      Films: [
         {
           id: 1,
-          title: 'something'
+          title: 'Oculus'
         },
         {
           id: 2,
-          title: 'something else'
+          title: 'Cat in Hat',
+  
         }
       ]
     });
@@ -274,7 +282,7 @@ describe('Film tests', () => {
 
     const newFilm = {
       title: 'Spooky Bandit',
-      studio: 1,
+      StudioId: 1,
       released: 2009,
       reviewer: 1
     };
@@ -283,7 +291,7 @@ describe('Film tests', () => {
       .post('/api/v1/films')
       .send(newFilm);
 
-    expect(res.body).toEqual({ ...newFilm, id: 1 });
+    expect(res.body).toEqual({ ...newFilm, id: 1, studio: null });
     
   });
 
@@ -362,6 +370,12 @@ describe('Film tests', () => {
       released: 2014
     });
 
+    await Actor.create({
+      name: 'Tom',
+      dob: 1987,
+      pob: 'Baltimore'
+    });
+
     const res = await request(app)
       .get('/api/v1/films/1');
 
@@ -369,7 +383,7 @@ describe('Film tests', () => {
       title: 'Oculus',
       released: 2014,
       Studio: { id: 1, name: 'Chatta Studio' },
-      cast: [{ id: 1, name: 'someone' }],
+      cast: [{ id: 1, name: 'Tom' }],
       reviews: [{
         id: 1,
         rating: 5,
