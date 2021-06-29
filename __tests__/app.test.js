@@ -12,67 +12,58 @@ describe('reviewer routes', () => {
   beforeEach(() => {
     return sequelize.sync({ force: true });
   });
-  it('creates a user via POST', async () => {
+
+  it('creates a new reviewer via POST', async () => {
+
     const res = await request(app)
       .post('/api/v1/reviewers')
       .send({
-        userName: 'Tucker',
+        name: 'Tucker',
         company: 'NYT',
-        FilmId: null
       });
 
     expect(res.body).toEqual({
       id: 1,
-      userName: 'Tucker',
+      name: 'Tucker',
       company: 'NYT',
-      FilmId: null,
-      updatedAt: expect.any(String),
-      createdAt: expect.any(String)
     });
+
   });
 
-  it('gets all users via GET', async () => {
+  it('gets all reviewers via GET', async () => {
 
     await Reviewer.bulkCreate([
       {
-        userName: 'banana lover',
+        name: 'banana lover',
         company: 'banana land'
       },
       {
-        userName: 'banana enthusiast',
+        name: 'banana enthusiast',
         company: 'banana republic'
       },
       {
-        userName: 'banana fanatic',
+        name: 'banana fanatic',
         company: 'banana inc'
       }
     ]);
 
     const res = await request(app).get('/api/v1/reviewers');
+
     expect(res.body).toEqual(
       [{
         id: expect.any(Number),
-        userName: 'banana lover',
+        name: 'banana lover',
         company: 'banana land',
-        FilmId: null,
-        updatedAt: expect.any(String),
-        createdAt: expect.any(String)
       },
       {
         id: expect.any(Number),
-        userName: 'banana enthusiast',
+        name: 'banana enthusiast',
         company: 'banana republic',
-        FilmId: null,
-        updatedAt: expect.any(String),
-        createdAt: expect.any(String)
       },
       {
         id: expect.any(Number),
-        userName: 'banana fanatic',
+        name: 'banana fanatic',
         company: 'banana inc',
-        FilmId: null,
-        updatedAt: expect.any(String),
-        createdAt: expect.any(String)
       }],
 
     );
@@ -81,30 +72,28 @@ describe('reviewer routes', () => {
 
   it('selects one reviewer by id via GET', async () => {
 
-    await Film.create({
-      title: 'Squishy Boy',
-      released: 2007
+    const newReviewer = await Reviewer.create({
+      name: 'Harry',
+      company: 'Hogwarts',
     });
 
-    await Reviewer.create({
-      userName: 'Harry',
-      company: 'Hogwarts',
-      FilmId: 1
+    await Film.create({
+      title: 'Squishy Boy',
+      released: 2007,
+      reviewer: 1,
     });
 
     await Review.create({
       rating: 3,
-      reviewer: '1',
+      reviewer: 1,
       review: 'bleh'
     });
 
-    
-
-    const res = await request(app).get('/api/v1/reviewers/1');
+    const res = await request(app).get(`/api/v1/reviewers/${newReviewer.id}`);
 
     expect(res.body).toEqual({
       id: 1,
-      userName: 'Harry',
+      name: 'Harry',
       company: 'Hogwarts',
       Reviews: [{
         id: 1,
@@ -118,31 +107,29 @@ describe('reviewer routes', () => {
   it('updates a reviewer via PUT', async () => {
 
     const reviewer = await Reviewer.create({
-      userName: 'Bilbo',
+      name: 'Bilbo',
       company: 'Shire'
     });
 
     const res = await request(app)
       .put('/api/v1/reviewers/1')
       .send({
-        userName: 'Frodo',
+        name: 'Frodo',
         company: 'Shire'
       });
 
     expect(res.body).toEqual({
       ...reviewer.toJSON(),
-      userName: 'Frodo',
+      name: 'Frodo',
       company: 'Shire',
-      updatedAt: expect.any(String),
-      createdAt: expect.any(String)
     });
 
-    expect(res.body.updatedAt).not.toEqual(reviewer.updatedAt.toISOString());
+    expect(res.body.updatedAt).not.toEqual(reviewer);
   });
 
   it('deletes a reviewer', async () => {
     const reviewer = await Reviewer.create({
-      userName: 'MermaidMan',
+      name: 'MermaidMan',
       company: 'Underwater Protection Agency'
     });
 
@@ -179,8 +166,6 @@ describe('studio routes', () => {
       city: 'Orlando',
       state: 'FL',
       country: 'USA',
-      updatedAt: expect.any(String),
-      createdAt: expect.any(String)
     });
   });
 
@@ -237,8 +222,6 @@ describe('studio routes', () => {
     const res = await request(app).get('/api/v1/studios/1');
     expect(res.body).toEqual({
       ...studio.toJSON(),
-      updatedAt: expect.any(String),
-      createdAt: expect.any(String)
     });
   });
 
@@ -274,8 +257,7 @@ describe('Film tests', () => {
       title: 'Spooky Bandit',
       studio: 1,
       released: 2009,
-      updatedAt: expect.any(String),
-      createdAt: expect.any(String),
+      reviewer: null
     });
   });
 
@@ -373,7 +355,7 @@ describe('actor routes', () => {
   beforeEach(() => {
     return sequelize.sync({ force: true });
   });
-  it('creates and actor via POST', async () => {
+  it('creates an actor via POST', async () => {
     const res = await request(app)
       .post('/api/v1/actors')
       .send({
@@ -387,8 +369,6 @@ describe('actor routes', () => {
       name: 'Spongebob Squidpants',
       dob: '2001-12-14',
       pob: 'Krypton',
-      updatedAt: expect.any(String),
-      createdAt: expect.any(String)
     });
   });
 
@@ -419,25 +399,18 @@ describe('actor routes', () => {
         name: 'Spongebob Squidpants',
         dob: '2001-12-14',
         pob: 'Krypton',
-        updatedAt: expect.any(String),
-        createdAt: expect.any(String)
       },
       {
         id: expect.any(Number),
         name: 'Lydia DoorBlocker',
         dob: '1801-12-14',
         pob: 'Denial of Entry',
-        updatedAt: expect.any(String),
-        createdAt: expect.any(String)
       },
       {
         id: expect.any(Number),
         name: 'Jason BourneTwoBeWild',
         dob: '2101-12-14',
         pob: 'Your lovely nightmares',
-        updatedAt: expect.any(String),
-        createdAt: expect.any(String)
-
       }]
     );
   });
@@ -510,7 +483,7 @@ describe('Review tests', () => {
     });
 
     await Reviewer.create({
-      userName: 'Bob',
+      name: 'Bob',
       company: 'Blah Inc.'
     });
 
@@ -527,17 +500,15 @@ describe('Review tests', () => {
       rating: 3,
       reviewer: 1,
       review: 'blah',
-      updatedAt: expect.any(String),
-      createdAt: expect.any(String),
       film: null, // come back to this
     });
   });
 
-  it('gets review from Review', async () => {
+  it('gets all reviews', async () => {
 
     await Film.create({
       title: 'Big Showdown in little Durango',
-      released: 2018
+      released: 2017
     });
 
     await Film.create({
@@ -545,40 +516,39 @@ describe('Review tests', () => {
       released: 2018
     });
 
-    await Reviewer.create({
-      userName: 'Bob',
-      company: 'Blah Inc.'
-    });
-
-    await Reviewer.create({
-      userName: 'Miranda',
-      company: 'Blah Inc.'
+    await Film.create({
+      title: 'Big Showdown in medium Durango',
+      released: 2019
     });
 
     await Review.create({
       rating: 2,
       review: 'Not as advertised.',
-      reviewer: 1,
       film: 1
     });
 
     await Review.create({
       rating: 4,
       review: 'As advertised.',
-      reviewer: 2,
       film: 2
+    });
+
+    await Review.create({
+      rating: 5,
+      review: 'Kind of as advertised.',
+      film: 3
     });
 
     const res = await request(app).get('/api/v1/reviews');
 
     expect(res.body).toEqual(
       [{
-        id: 1,
-        rating: 2,
-        review: 'Not as advertised.',
+        id: 3,
+        rating: 5,
+        review: 'Kind of as advertised.',
         Film: {
-          id: 1,
-          title: 'Big Showdown in little Durango'
+          id: 3,
+          title: 'Big Showdown in medium Durango'
         },
       },
       {
@@ -588,8 +558,18 @@ describe('Review tests', () => {
         Film: {
           id: 2,
           title: 'Big Showdown in big Durango'
+        },
+      },
+      {
+        id: 1,
+        rating: 2,
+        review: 'Not as advertised.',
+        Film: {
+          id: 1,
+          title: 'Big Showdown in little Durango'
         }
-      }]
+      }
+      ]
     );
 
   });
