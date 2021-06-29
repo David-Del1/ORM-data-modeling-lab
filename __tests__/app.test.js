@@ -501,27 +501,6 @@ describe('Review tests', () => {
 
   it('makes a review using POST', async () => {
 
-    await Studio.bulkCreate([
-      {
-        name: 'Chatta Studio',
-        city: 'Chattanooga',
-        state: 'TN',
-        country: 'USA'
-      },
-      {
-        name: 'Studio 54',
-        city: 'New York',
-        state: 'NY',
-        country: 'USA'
-      },
-      {
-        name: 'Unknown Inc.',
-        city: '',
-        state: '',
-        country: ''
-      }
-    ]);
-
     await Film.create({
       title: 'Big Showdown in little Durango',
       released: 2018
@@ -538,6 +517,25 @@ describe('Review tests', () => {
         rating: 3,
         reviewer: 1,
         review: 'blah',
+        film: 1
+      });
+
+    const resReviewTooLong = await request(app)
+      .post('/api/v1/reviews')
+      .send({
+        rating: 3,
+        reviewer: 1,
+        review: 'blahlksldfdskjnfkjdsfns;kjfnbds;jnbdskjfbdsjfkbdsiufndsf;kjsdfnsd;kjf;kjvbiubrfiudsbfdjdajfdsfbdsjfhbsoudsfyudsodsfkjhfjdsffsdfhdspiufjdsfdsfiodsajffjsdkjsdj;kjdsbijnbdsfijkbdsfjdsbfdsfsdfdsfdsafdsa',
+        film: 1
+      });
+
+    const resRatingTooHigh = await request(app)
+      .post('/api/v1/reviews')
+      .send({
+        rating: 342,
+        reviewer: 1,
+        review: 'blsodsfkjhfjdsffsdfhdspiufjdsfdsfioa',
+        film: 1
       });
 
     expect(res.body).toEqual({
@@ -545,46 +543,52 @@ describe('Review tests', () => {
       rating: 3,
       reviewer: 1,
       review: 'blah',
-      film: null, // come back to this
+      film: 1
     });
+    
+    expect(resReviewTooLong.body.message).toEqual('value too long for type character varying(140)');
+
+    expect(resRatingTooHigh.body.message).toEqual('Validation error: Validation max on rating failed');
+
   });
 
   it('gets all reviews', async () => {
 
-    await Film.create({
-      title: 'Big Showdown in little Durango',
-      released: 2017
-    });
+    await Film.bulkCreate([
+      {
+        title: 'Big Showdown in little Durango',
+        released: 2017
+      },
+      {
+        title: 'Big Showdown in big Durango',
+        released: 2018
+      },
+      {
+        title: 'Big Showdown in medium Durango',
+        released: 2019
+      }
+    ]);
 
-    await Film.create({
-      title: 'Big Showdown in big Durango',
-      released: 2018
-    });
+    await Review.bulkCreate([
+      {
+        rating: 2,
+        review: 'Not as advertised.',
+        film: 1
+      },
+      {
+        rating: 4,
+        review: 'As advertised.',
+        film: 2
+      },
+      {
+        rating: 5,
+        review: 'Kind of as advertised.',
+        film: 3
+      }
+    ]);
 
-    await Film.create({
-      title: 'Big Showdown in medium Durango',
-      released: 2019
-    });
-
-    await Review.create({
-      rating: 2,
-      review: 'Not as advertised.',
-      film: 1
-    });
-
-    await Review.create({
-      rating: 4,
-      review: 'As advertised.',
-      film: 2
-    });
-
-    await Review.create({
-      rating: 5,
-      review: 'Kind of as advertised.',
-      film: 3
-    });
-
-    const res = await request(app).get('/api/v1/reviews');
+    const res = await request(app)
+      .get('/api/v1/reviews');
 
     expect(res.body).toEqual(
       [{
@@ -614,8 +618,7 @@ describe('Review tests', () => {
           title: 'Big Showdown in little Durango'
         }
       }
-      ]
-    );
+      ]);
 
   });
 
