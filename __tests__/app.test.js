@@ -47,32 +47,32 @@ describe('reviewer routes', () => {
       }
     ]);
 
-    const res = await request(app).get('/api/v1/reviewers');
+    const res = await request(app)
+      .get('/api/v1/reviewers');
 
     expect(res.body).toEqual(
       [{
-        id: expect.any(Number),
+        id: 1,
         name: 'banana lover',
         company: 'banana land',
       },
       {
-        id: expect.any(Number),
+        id: 2,
         name: 'banana enthusiast',
         company: 'banana republic',
       },
       {
-        id: expect.any(Number),
+        id: 3,
         name: 'banana fanatic',
         company: 'banana inc',
       }],
-
     );
 
   });
 
   it('selects one reviewer by id via GET', async () => {
 
-    const newReviewer = await Reviewer.create({
+    await Reviewer.create({
       name: 'Harry',
       company: 'Hogwarts',
     });
@@ -83,13 +83,20 @@ describe('reviewer routes', () => {
       reviewer: 1,
     });
 
-    await Review.create({
-      rating: 3,
-      reviewer: 1,
-      review: 'bleh'
-    });
+    await Review.bulkCreate(
+      {
+        rating: 3,
+        reviewer: 1,
+        review: 'bleh'
+      },
+      {
+        rating: 2,
+        reviewer: 1,
+        review: 'blah'
+      });
 
-    const res = await request(app).get(`/api/v1/reviewers/${newReviewer.id}`);
+    const res = await request(app)
+      .get('/api/v1/reviewers/1');
 
     expect(res.body).toEqual({
       id: 1,
@@ -112,33 +119,33 @@ describe('reviewer routes', () => {
     });
 
     const res = await request(app)
-      .put('/api/v1/reviewers/1')
+      .put(`/api/v1/reviewers/${reviewer.id}`)
       .send({
         name: 'Frodo',
-        company: 'Shire'
+        company: 'shire'
       });
 
     expect(res.body).toEqual({
-      ...reviewer.toJSON(),
+      id: 1,
       name: 'Frodo',
-      company: 'Shire',
+      company: 'shire',
     });
 
     expect(res.body.updatedAt).not.toEqual(reviewer);
   });
 
   it('deletes a reviewer', async () => {
+
     const reviewer = await Reviewer.create({
       name: 'MermaidMan',
       company: 'Underwater Protection Agency'
     });
 
     const res = await request(app)
-      .delete('/api/v1/reviewers/1');
+      .delete(`/api/v1/reviewers/${reviewer.id}`);
+
     expect(res.body).not.toEqual({
       ...reviewer.toJSON(),
-      updatedAt: expect.any(String),
-      createdAt: expect.any(String)
     });
   });
 });
@@ -192,36 +199,54 @@ describe('studio routes', () => {
       }
     ]);
 
-    const res = await request(app).get('/api/v1/studios');
+    const res = await request(app)
+      .get('/api/v1/studios');
+
     expect(res.body).toEqual(
       [{
-        id: expect.any(Number),
+        id: 1,
         name: 'Chatta Studio',
       },
       {
-        id: expect.any(Number),
+        id: 2,
         name: 'Studio 54',
       },
       {
-        id: expect.any(Number),
+        id: 3,
         name: 'Unknown Inc.',
       }],
-
     );
 
   });
 
   it('gets a studio by id via GET', async () => {
-    const studio = await Studio.create({
+
+    await Studio.create({
       name: 'Warner Bros.',
       city: 'Studio City',
       state: 'CA',
       country: 'USA'
     });
 
-    const res = await request(app).get('/api/v1/studios/1');
+    const res = await request(app)
+      .get('/api/v1/studios/1');
+
     expect(res.body).toEqual({
-      ...studio.toJSON(),
+      id: 1,
+      name: 'Warner Bros.',
+      city: 'Studio City',
+      state: 'CA',
+      country: 'USA',
+      films: [
+        {
+          id: 1,
+          title: 'something'
+        },
+        {
+          id: 2,
+          title: 'something else'
+        }
+      ]
     });
   });
 
@@ -235,51 +260,48 @@ describe('Film tests', () => {
 
   it('creates a new film via POST', async () => {
 
-    const testingStudio = await Studio.create(
-      {
-        name: 'Chatta Studio',
-        city: 'Chattanooga',
-        state: 'TN',
-        country: 'USA'
-      }
-    );
+    await Reviewer.create({
+      name: 'new company',
+      company: 'old name'
+    });
 
-    const res = await request(app)
-      .post('/api/v1/films')
-      .send({
-        title: 'Spooky Bandit',
-        studio: testingStudio.id,
-        released: 2009
-      });
+    await Studio.create({
+      name: 'Chatta Studio',
+      city: 'Chattanooga',
+      state: 'TN',
+      country: 'USA'
+    });
 
-    expect(res.body).toEqual({
-      id: 1,
+    const newFilm = {
       title: 'Spooky Bandit',
       studio: 1,
       released: 2009,
-      reviewer: null
-    });
+      reviewer: 1
+    };
+
+    const res = await request(app)
+      .post('/api/v1/films')
+      .send(newFilm);
+
+    expect(res.body).toEqual({ ...newFilm, id: 1 });
+    
   });
 
   it('gets all films', async () => {
 
-    await Studio.create(
-      {
-        name: 'Chatta Studio',
-        city: 'Chattanooga',
-        state: 'TN',
-        country: 'USA'
-      }
-    );
+    await Studio.create({
+      name: 'Chatta Studio',
+      city: 'Chattanooga',
+      state: 'TN',
+      country: 'USA'
+    });
 
-    await Studio.create(
-      {
-        name: 'Test Studio',
-        city: 'Mexico City',
-        state: 'Mexico',
-        country: 'Mexico'
-      }
-    );
+    await Studio.create({
+      name: 'Test Studio',
+      city: 'Mexico City',
+      state: 'Mexico',
+      country: 'Mexico'
+    });
 
     await Film.bulkCreate([
       {
@@ -299,10 +321,10 @@ describe('Film tests', () => {
       }
     ]);
 
-    const res = await request(app).get('/api/v1/films');
+    const res = await request(app)
+      .get('/api/v1/films');
 
     expect(res.body).toEqual([
-
       {
         id: 1,
         title: 'Oculus',
@@ -321,20 +343,18 @@ describe('Film tests', () => {
         released: 1993,
         Studio: { id: 2, name: 'Test Studio' }
       }
-
     ]);
+
   });
 
-  it('gets film by id via GET', async () => {
+  it('gets a film by id via GET', async () => {
 
-    await Studio.create(
-      {
-        name: 'Chatta Studio',
-        city: 'Chattanooga',
-        state: 'TN',
-        country: 'USA'
-      }
-    );
+    await Studio.create({
+      name: 'Chatta Studio',
+      city: 'Chattanooga',
+      state: 'TN',
+      country: 'USA'
+    });
 
     await Film.create({
       title: 'Oculus',
@@ -342,20 +362,34 @@ describe('Film tests', () => {
       released: 2014
     });
 
-    const res = await request(app).get('/api/v1/films/1');
+    const res = await request(app)
+      .get('/api/v1/films/1');
+
     expect(res.body).toEqual({
       title: 'Oculus',
       released: 2014,
-      Studio: { id: 1, name: 'Chatta Studio' }
+      Studio: { id: 1, name: 'Chatta Studio' },
+      cast: [{ id: 1, name: 'someone' }],
+      reviews: [{
+        id: 1,
+        rating: 5,
+        review: 'hi',
+        reviewer: { id: 1, name: 'no-one' } 
+      }]
     });
+  
   });
+
 });
 
 describe('actor routes', () => {
+
   beforeEach(() => {
     return sequelize.sync({ force: true });
   });
+
   it('creates an actor via POST', async () => {
+
     const res = await request(app)
       .post('/api/v1/actors')
       .send({
@@ -365,7 +399,7 @@ describe('actor routes', () => {
       });
 
     expect(res.body).toEqual({
-      id: expect.any(Number),
+      id: 1,
       name: 'Spongebob Squidpants',
       dob: '2001-12-14',
       pob: 'Krypton',
@@ -392,57 +426,68 @@ describe('actor routes', () => {
       },
     ]);
 
-    const res = await request(app).get('/api/v1/actors');
+    const res = await request(app)
+      .get('/api/v1/actors');
+
     expect(res.body).toEqual(
       [{
-        id: expect.any(Number),
+        id: 1,
         name: 'Spongebob Squidpants',
-        dob: '2001-12-14',
-        pob: 'Krypton',
       },
       {
-        id: expect.any(Number),
+        id: 2,
         name: 'Lydia DoorBlocker',
-        dob: '1801-12-14',
-        pob: 'Denial of Entry',
       },
       {
-        id: expect.any(Number),
+        id: 3,
         name: 'Jason BourneTwoBeWild',
-        dob: '2101-12-14',
-        pob: 'Your lovely nightmares',
       }]
     );
   });
 
   it('selects one actor by id via GET', async () => {
-    const actor = await Actor.create({
 
+    const actor = await Actor.create({
       name: 'Spongebob Squidpants',
       dob: '2001-12-14',
       pob: 'Krypton'
-
     });
 
     const film = await Film.create({
-      id: '1',
+      id: 1,
       title: 'Spooky Bandit',
       released: 2009
     });
 
-    await actor.addFilm(film);
+    const otherFilm = await Film.create({
+      id: 2,
+      title: 'Rooky Bandit',
+      released: 20012
+    });
 
-    const res = await request(app).get('/api/v1/actors/1');
+    await actor.addFilm(film);
+    await actor.addFilm(otherFilm);
+
+
+    const res = await request(app)
+      .get('/api/v1/actors/1');
+
     expect(res.body).toEqual({
       name: 'Spongebob Squidpants',
       dob: '2001-12-14',
       pob: 'Krypton',
-      Films: [{
-        id: 1,
-        title: 'Spooky Bandit',
-        released: 2009
-
-      }]
+      Films: [
+        {
+          id: 1,
+          title: 'Spooky Bandit',
+          released: 2009
+        },
+        {
+          id: 2,
+          title: 'Rooky Bandit',
+          released: 20012
+        }
+      ]
     });
   });
 
